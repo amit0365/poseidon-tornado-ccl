@@ -67,7 +67,7 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
         emit Deposit(_commitment, insertedIndex, block.timestamp);
     }
 
-    /** @dev this function is defined in a child contract */
+    /** @dev this function is defined in a child contract i.e ETHTornado */
     function _processDeposit() internal virtual;
 
     /**

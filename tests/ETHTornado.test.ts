@@ -15,6 +15,12 @@ import path from "path";
 const ETH_AMOUNT = ethers.utils.parseEther("1");
 const HEIGHT = 20;
 
+/** 
+ * In each test, a new merkle tree is initialised and filled locally by fetching events
+ * Witness generation is diff as the witness in initialised with required inputs
+ * Even if no error is caught, the test is set to timeout after 500000
+ * */
+
 function poseidonHash(inputs: BigNumberish[]): string {
     const hash = poseidon(inputs.map((x) => BigNumber.from(x).toBigInt()));
     const bytes32 = ethers.utils.hexZeroPad(
@@ -92,6 +98,19 @@ describe("ETHTornado", function () {
             poseidon.address
         );
     });
+    /** line 112
+     * Also, the receiving contract must have a payable fallback function in order to receive ether.
+     */
+
+    /** line 116
+     * The tornado.queryFilter() function is called to query the blockchain for any events 
+     * emitted by the tornado contract with the Deposit event type. The function takes 
+     * two arguments: the event filter object (tornado.filters.Deposit()), 
+     * and the block hash of the transaction receipt (receipt.blockHash). 
+     * The function returns an array of event objects that match the specified filter criteria.
+     * 
+     */
+
     it("deposit and withdraw", async function () {
         const [userOldSigner, relayerSigner, userNewSigner] =
             await ethers.getSigners();
@@ -104,9 +123,21 @@ describe("ETHTornado", function () {
             tornado.filters.Deposit(),
             receipt.blockHash
         );
+
+        /** listen deposit events with arg as commitment
+         * find the leaf index
+         */
         assert.equal(events[0].args.commitment, deposit.commitment);
         console.log("Deposit gas cost", receipt.gasUsed.toNumber());
         deposit.leafIndex = events[0].args.leafIndex;
+        console.log("Deposit Leaf Index",deposit.leafIndex);
+
+        /**
+         * construct merkle tree locally and insert commitment
+         * tornado is an instance of ETHTornado which inherits Tornado contract
+         * The Tornado inturn inherits form MerkleTreeWithHistory which 
+         * has public input roots that is accessed here
+         */
 
         const tree = new MerkleTree(HEIGHT, "test", new PoseidonHasher());
         assert.equal(await tree.root(), await tornado.roots(0));
@@ -123,6 +154,7 @@ describe("ETHTornado", function () {
             deposit.leafIndex
         );
 
+        //witness was inputed rather than calculated from wasm file
         const witness = {
             // Public
             root,
@@ -230,6 +262,7 @@ describe("ETHTornado", function () {
         );
         depositHonest.leafIndex = events[0].args.leafIndex;
 
+        // the leafindex for deposit honest was 0 so we increment here
         // The attacker never made a deposit on chain
         const depositAttacker = Deposit.new();
         depositAttacker.leafIndex = 1;

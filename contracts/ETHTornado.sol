@@ -4,7 +4,10 @@ pragma solidity ^0.7.3;
 pragma experimental ABIEncoderV2;
 
 import "./Tornado.sol";
-
+/**
+ * The constructor function in ETHTornado inherits from Tornado contract
+ * This calls the constructor of the Tornado contract and passes along the four arguments. 
+ */
 contract ETHTornado is Tornado {
     constructor(
         IVerifier _verifier,
