@@ -21,18 +21,22 @@ template Withdraw(levels) {
     // ### Something is missing here
     // complete the input to the Poseidon hash function
     // example:
-    //  nullifierHasher.inputs[0] <== ?????;
-    //  nullifierHasher.inputs[1] <== ?????;
+    nullifierHasher.inputs[0] <== nullifier;
+    nullifierHasher.inputs[1] <== 1;
+    nullifierHasher.inputs[2] <== leafIndexNum.out;
     nullifierHasher.out === nullifierHash;
 
     component commitmentHasher = Poseidon(2);
     // ### Something is missing here too
     // complete the input to the Poseidon hash function
+    commitmentHasher.inputs[0] <== nullifier;
+    commitmentHasher.inputs[1] <== 0;
+
 
     component tree = MerkleTreeChecker(levels);
     // ### Uncomment the following lines and complete the input variable
-    // tree.leaf <== ????;
-    // tree.root <== ????;
+    tree.leaf <== commitmentHasher.out;
+    tree.root <== root;
     for (var i = 0; i < levels; i++) {
         tree.pathElements[i] <== pathElements[i];
         tree.pathIndices[i] <== pathIndices[i];

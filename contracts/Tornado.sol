@@ -44,6 +44,7 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
     @param _denomination transfer amount for each deposit
     @param _merkleTreeHeight the height of deposits' Merkle Tree
     */
+   // checked for a non-negative amount in denomination
     constructor(
         IVerifier _verifier,
         uint256 _denomination,
@@ -77,6 +78,7 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
       - the recipient of funds
       - optional fee that goes to the transaction sender (usually a relay)
     */
+   // proof is stored in calldata
     function withdraw(
         Proof calldata _proof,
         bytes32 _root,
@@ -88,6 +90,8 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
         require(_fee <= denomination, "Fee exceeds transfer value");
         // ### Somethings are missing here
         // Hint: 2 requires
+        require(nullifierHashes[_nullifierHash]==false,"The note has been already spent");
+        require(isKnownRoot(_root)==true,"Cannot find your merkle root");
         require(
             verifier.verifyProof(
                 _proof.a,
@@ -106,6 +110,7 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
 
         // ### Somethings are missing here
         // Hint: it's 1 line and related to the require.
+        nullifierHashes[_nullifierHash]=true;
         _processWithdraw(_recipient, _relayer, _fee);
         emit Withdrawal(_recipient, _nullifierHash, _relayer, _fee);
     }

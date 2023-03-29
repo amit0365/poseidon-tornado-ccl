@@ -30,6 +30,10 @@ class PoseidonHasher implements Hasher {
     }
 }
 
+//randomly assigns nullifier
+//if a value is not provided leafindex,
+//the property will be initialised to undefined type instead of numeric type
+
 class Deposit {
     private constructor(
         public readonly nullifier: Uint8Array,
@@ -63,6 +67,7 @@ interface Proof {
     c: [BigNumberish, BigNumberish];
 }
 
+//takes a proof and extract values pi_a,pi_b,pi_c
 function parseProof(proof: any): Proof {
     return {
         a: [proof.pi_a[0], proof.pi_a[1]],
